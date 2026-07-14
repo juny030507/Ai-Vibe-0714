@@ -381,6 +381,75 @@ h1 em { color: var(--accent); font-style: normal; font-weight: 500; }
 .analysis-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .analysis-summary span { padding: 8px 10px; color: var(--muted); background: #efede6; font-size: 10px; }
 .analysis-summary b { color: var(--ink); }
+.analysis-method { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
+.analysis-method-head, .number-analysis-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+.analysis-method-head h3, .number-analysis-head h3, .probability-card h3 { margin: 0; font-size: 16px; letter-spacing: -.035em; }
+.analysis-method-head > span, .number-analysis-head > span { color: var(--muted); font-size: 10px; }
+.weight-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.weight-item { position: relative; overflow: hidden; padding: 17px; background: var(--card); border: 1px solid var(--line); }
+.weight-item::before { content: ""; position: absolute; inset: 0 auto auto 0; width: var(--weight); height: 3px; background: var(--accent); }
+.weight-item.frequency { --weight: 45%; }
+.weight-item.trend { --weight: 25%; }
+.weight-item.overdue { --weight: 30%; }
+.weight-item > div { display: flex; align-items: baseline; gap: 8px; }
+.weight-item strong { color: var(--accent); font-size: 18px; }
+.weight-item span { color: var(--ink); font-size: 11px; font-weight: 700; }
+.weight-item p { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.balance-rule { display: flex; align-items: baseline; gap: 14px; margin-top: 10px; padding: 12px 14px; background: #efede6; }
+.balance-rule strong { flex: none; font-size: 10px; }
+.balance-rule span { color: var(--muted); font-size: 9px; line-height: 1.55; }
+.probability-card {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  align-items: center;
+  gap: 34px;
+  margin-top: 18px;
+  padding: 22px 24px;
+  color: white;
+  background: var(--ink);
+}
+.probability-card .label { margin-bottom: 6px; color: #f3a48b; }
+.probability-card h3 { color: white; }
+.probability-card p:not(.label) { margin: 7px 0 0; color: rgba(255,255,255,.62); font-size: 10px; line-height: 1.6; }
+.probability-card dl { display: grid; gap: 9px; margin: 0; }
+.probability-card dl > div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.probability-card dt { color: rgba(255,255,255,.62); font-size: 10px; }
+.probability-card dd { margin: 0; color: white; font-size: 15px; font-weight: 700; text-align: right; }
+.probability-card small { display: block; margin-top: 2px; color: #f3a48b; font-size: 9px; font-weight: 500; }
+.number-analysis { margin-top: 26px; }
+.number-analysis-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.number-analysis-item {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: 15px;
+  background: rgba(255,254,250,.7);
+  border: 1px solid var(--line);
+}
+.analysis-number {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+.analysis-number.yellow { background: var(--yellow); }
+.analysis-number.blue { background: var(--blue); }
+.analysis-number.red { background: var(--red); }
+.analysis-number.gray { background: var(--gray); }
+.analysis-number.green { background: var(--green); }
+.score-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.score-heading strong { font-size: 12px; }
+.score-heading span { color: var(--muted); font-size: 9px; }
+.score-bar { overflow: hidden; height: 5px; margin-top: 8px; background: #e5e3dc; border-radius: 999px; }
+.score-bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+.score-detail { margin: 8px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.score-parts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.score-parts span { padding: 3px 5px; color: #64736c; background: #e8eee9; font-size: 8px; }
 .probability-note { margin: 14px 0 0; color: #969e99; font-size: 10px; line-height: 1.65; }
 
 .history-section { padding: 72px 0 40px; }
@@ -464,6 +533,11 @@ footer b { color: var(--accent); }
   .recommendation-ball { width: calc((100vw - 83px) / 6); height: calc((100vw - 83px) / 6); max-width: 44px; max-height: 44px; }
   .recommendation-actions { flex-direction: column; }
   .recommend-button, .use-recommendation-button { width: 100%; }
+  .analysis-method-head, .number-analysis-head { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .weight-list { grid-template-columns: 1fr; }
+  .balance-rule { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .probability-card { grid-template-columns: 1fr; gap: 20px; padding: 20px; }
+  .number-analysis-list { grid-template-columns: 1fr; }
   .winning-section { padding: 28px 18px 30px; }
   .winning-intro { display: block; }
   .winning-intro h2 { font-size: 21px; }

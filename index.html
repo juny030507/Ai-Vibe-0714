@@ -95,6 +95,51 @@
 
       <p class="recommendation-status" id="recommendationStatus" aria-live="polite">추천할 때마다 가중치 안에서 새로운 조합을 만들어요.</p>
       <div class="analysis-summary" id="analysisSummary" hidden></div>
+
+      <div class="analysis-method">
+        <div class="analysis-method-head">
+          <h3>추천지수는 이렇게 계산해요</h3>
+          <span>총 100점 · 당첨확률 아님</span>
+        </div>
+        <div class="weight-list">
+          <div class="weight-item frequency">
+            <div><strong>45점</strong><span>최근 빈도</span></div>
+            <p>최근 30회에서 자주 등장했는지 봐요.</p>
+          </div>
+          <div class="weight-item trend">
+            <div><strong>25점</strong><span>단기 흐름</span></div>
+            <p>그중 최근 10회의 출현 흐름을 반영해요.</p>
+          </div>
+          <div class="weight-item overdue">
+            <div><strong>30점</strong><span>미출현 기간</span></div>
+            <p>최근 몇 회 동안 쉬어간 번호인지 살펴봐요.</p>
+          </div>
+        </div>
+        <div class="balance-rule">
+          <strong>마지막 조합 단계</strong>
+          <span>점수가 높은 번호일수록 뽑힐 비중을 높이되 무작위성을 남기고, 홀짝·1~22/23~45 비율을 각각 2:4~4:2, 번호 합계를 100~180으로 맞춰요.</span>
+        </div>
+      </div>
+
+      <div class="probability-card">
+        <div>
+          <p class="label">ACTUAL PROBABILITY</p>
+          <h3>통계와 실제 확률은 달라요</h3>
+          <p>추첨은 매회 독립적이라 과거 출현 횟수가 다음 결과의 확률을 바꾸지는 않아요.</p>
+        </div>
+        <dl>
+          <div><dt>번호 1개가 포함될 확률</dt><dd>13.3333%</dd></div>
+          <div><dt>추천 조합이 1등일 확률</dt><dd>0.00001228% <small>1 / 8,145,060</small></dd></div>
+        </dl>
+      </div>
+
+      <div class="number-analysis" id="numberAnalysis" hidden>
+        <div class="number-analysis-head">
+          <h3>추천번호별 분석</h3>
+          <span>추천지수는 45개 번호 안에서 비교하는 참고 점수예요.</span>
+        </div>
+        <div class="number-analysis-list" id="numberAnalysisList"></div>
+      </div>
       <p class="probability-note">※ 과거 통계는 재미를 위한 참고 자료이며, 로또의 모든 6개 번호 조합은 실제 당첨확률이 같습니다.</p>
     </section>
 

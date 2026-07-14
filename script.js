@@ -23,6 +23,8 @@ const recommendButton = document.querySelector('#recommendButton');
 const useRecommendationButton = document.querySelector('#useRecommendationButton');
 const recommendationStatus = document.querySelector('#recommendationStatus');
 const analysisSummary = document.querySelector('#analysisSummary');
+const numberAnalysis = document.querySelector('#numberAnalysis');
+const numberAnalysisList = document.querySelector('#numberAnalysisList');
 
 const HISTORY_KEY = 'lucky-number-history';
 const OFFICIAL_API = 'https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do';
@@ -302,17 +304,23 @@ function analyzeRecentDraws(draws) {
   const maxFrequency = Math.max(...frequency);
   const maxRecentFrequency = Math.max(...recentFrequency);
   const scores = Array(46).fill(0);
+  const components = Array(46).fill(null);
   for (let number = 1; number <= 45; number += 1) {
-    scores[number] = (frequency[number] / maxFrequency * .45)
-      + (recentFrequency[number] / maxRecentFrequency * .25)
-      + (lastSeen[number] / draws.length * .30)
-      + .08;
+    const frequencyPoints = frequency[number] / maxFrequency * 45;
+    const trendPoints = recentFrequency[number] / maxRecentFrequency * 25;
+    const overduePoints = lastSeen[number] / draws.length * 30;
+    scores[number] = (frequencyPoints + trendPoints + overduePoints) / 100;
+    components[number] = {
+      frequency: Math.round(frequencyPoints),
+      trend: Math.round(trendPoints),
+      overdue: Math.round(overduePoints)
+    };
   }
 
   const numbers = Array.from({ length: 45 }, (_, index) => index + 1);
   const hot = [...numbers].sort((a, b) => frequency[b] - frequency[a] || recentFrequency[b] - recentFrequency[a]).slice(0, 5);
   const overdue = [...numbers].sort((a, b) => lastSeen[b] - lastSeen[a] || frequency[a] - frequency[b]).slice(0, 5);
-  return { frequency, lastSeen, scores, hot, overdue };
+  return { frequency, recentFrequency, lastSeen, scores, components, hot, overdue };
 }
 
 function weightedSample(scores) {
@@ -355,6 +363,37 @@ function renderRecommendation(numbers) {
   `).join('');
 }
 
+function renderNumberAnalysis(numbers, analysis, drawCount) {
+  numberAnalysis.hidden = false;
+  numberAnalysisList.innerHTML = numbers.map(number => {
+    const index = Math.round(analysis.scores[number] * 100);
+    const appearanceRate = (analysis.frequency[number] / drawCount * 100).toFixed(1);
+    const gap = analysis.lastSeen[number] === 0
+      ? '최신 회차에 출현'
+      : `${analysis.lastSeen[number]}회째 미출현`;
+    const points = analysis.components[number];
+
+    return `
+      <div class="number-analysis-item">
+        <span class="analysis-number ${getColor(number)}">${number}</span>
+        <div>
+          <div class="score-heading">
+            <strong>통계 추천지수 ${index}점</strong>
+            <span>과거 출현율 ${appearanceRate}%</span>
+          </div>
+          <div class="score-bar" aria-label="추천지수 ${index}점"><i style="width:${index}%"></i></div>
+          <p class="score-detail">30회 중 ${analysis.frequency[number]}번 · 최근 10회 ${analysis.recentFrequency[number]}번 · ${gap}</p>
+          <div class="score-parts">
+            <span>빈도 ${points.frequency}/45</span>
+            <span>흐름 ${points.trend}/25</span>
+            <span>휴식 ${points.overdue}/30</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 async function recommendNumbers() {
   recommendButton.disabled = true;
   recommendButton.textContent = '최근 30회 분석 중...';
@@ -367,6 +406,7 @@ async function recommendNumbers() {
     const analysis = analyzeRecentDraws(draws);
     recommendedNumbers = buildRecommendation(analysis.scores);
     renderRecommendation(recommendedNumbers);
+    renderNumberAnalysis(recommendedNumbers, analysis, draws.length);
     useRecommendationButton.hidden = false;
     recommendationStatus.textContent = `${draws.at(-1).round}회~${draws[0].round}회 분석을 반영한 추천 조합이에요.`;
     analysisSummary.hidden = false;
