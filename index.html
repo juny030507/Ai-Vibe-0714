@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f2ea">
+  <title>행운 번호 연구소</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="행운 번호 연구소 홈">
+        <span class="brand-mark" aria-hidden="true">✣</span>
+        <span>행운 번호 연구소</span>
+      </a>
+      <p class="date" id="today"></p>
+    </header>
+
+    <section class="hero" aria-labelledby="main-title">
+      <div class="eyebrow"><span></span> LUCKY NUMBER GENERATOR</div>
+      <h1 id="main-title">오늘의 행운을<br><em>가볍게 뽑아보세요.</em></h1>
+      <p class="intro">작은 설렘이 필요한 순간을 위해.<br>1부터 45까지, 당신만의 여섯 숫자를 골라드려요.</p>
+    </section>
+
+    <section class="draw-card" aria-label="로또 번호 추첨기">
+      <div class="card-topline">
+        <div>
+          <p class="label">YOUR LUCKY NUMBERS</p>
+          <p class="hint" id="statusText" aria-live="polite">버튼을 누르면 번호를 뽑아드려요.</p>
+        </div>
+        <span class="draw-count" id="drawCount"># 001</span>
+      </div>
+
+      <div class="balls" id="balls" aria-label="추첨 번호">
+        <div class="ball placeholder">?</div>
+        <div class="ball placeholder">?</div>
+        <div class="ball placeholder">?</div>
+        <div class="ball placeholder">?</div>
+        <div class="ball placeholder">?</div>
+        <div class="ball placeholder">?</div>
+      </div>
+
+      <div class="card-actions">
+        <button class="draw-button" id="drawButton" type="button">
+          <span id="buttonText">행운 번호 뽑기</span>
+          <span class="button-icon" aria-hidden="true">→</span>
+        </button>
+        <button class="copy-button" id="copyButton" type="button" disabled aria-label="결과 복사">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="history-section" aria-labelledby="history-title">
+      <div class="section-heading">
+        <h2 id="history-title">최근 추첨</h2>
+        <button id="clearButton" type="button">기록 지우기</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-history">
+          <span>아직 추첨 기록이 없어요.</span>
+          <span class="empty-line"></span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>숫자는 무작위로 생성되며, 당첨을 보장하지 않아요.</p>
+      <span>GOOD LUCK <b>✦</b></span>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
