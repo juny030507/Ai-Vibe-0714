@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f5f2ea">
+  <meta name="theme-color" content="#ffffff">
   <title>행운 번호 연구소</title>
   <meta name="description" content="로또 6/45 행운 번호를 만들고 실제 당첨번호와 비교해 보세요.">
   <meta property="og:title" content="행운 번호 연구소">
@@ -25,12 +25,38 @@
     </header>
 
     <section class="hero" aria-labelledby="main-title">
-      <div class="eyebrow"><span></span> LUCKY NUMBER GENERATOR</div>
-      <h1 id="main-title">오늘의 행운을<br><em>가볍게 뽑아보세요.</em></h1>
-      <p class="intro">작은 설렘이 필요한 순간을 위해.<br>1부터 45까지, 당신만의 여섯 숫자를 골라드려요.</p>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow"><span></span> LUCKY NUMBER GENERATOR</div>
+          <h1 id="main-title">오늘의 행운을<br><em>가볍게 뽑아보세요.</em></h1>
+          <p class="intro">작은 설렘이 필요한 순간을 위해.<br>1부터 45까지, 당신만의 여섯 숫자를 골라드려요.</p>
+          <div class="hero-actions" aria-label="빠른 이동">
+            <a class="hero-action primary" href="#draw-panel">번호 뽑기</a>
+            <a class="hero-action secondary" href="#recommendation-section">통계 추천 보기</a>
+          </div>
+        </div>
+
+        <aside class="hero-panel" aria-label="앱 핵심 기능">
+          <p class="hero-panel-label">PRODUCT SNAPSHOT</p>
+          <div class="hero-panel-list">
+            <div class="hero-panel-item">
+              <strong>공식 결과 비교</strong>
+              <span>동행복권 회차를 불러와 내 번호와 바로 대조해요.</span>
+            </div>
+            <div class="hero-panel-item">
+              <strong>통계 추천 조합</strong>
+              <span>최근 100회 흐름과 미출현 기간을 함께 반영해요.</span>
+            </div>
+            <div class="hero-panel-item">
+              <strong>Supabase 누적 저장</strong>
+              <span>뽑은 번호는 삭제 없이 계속 쌓이고, 더보기로 펼쳐볼 수 있어요.</span>
+            </div>
+          </div>
+        </aside>
+      </div>
     </section>
 
-    <section class="draw-card" aria-label="로또 번호 추첨기">
+    <section class="draw-card" id="draw-panel" aria-label="로또 번호 추첨기">
       <div class="card-topline">
         <div>
           <p class="label">YOUR LUCKY NUMBERS</p>
@@ -68,7 +94,7 @@
       </div>
     </section>
 
-    <section class="recommendation-section" aria-labelledby="recommendation-title">
+    <section class="recommendation-section" id="recommendation-section" aria-labelledby="recommendation-title">
       <div class="recommendation-intro">
         <div>
           <p class="label">STATISTICAL PICK</p>
@@ -143,7 +169,7 @@
       <p class="probability-note">※ 과거 통계는 재미를 위한 참고 자료이며, 로또의 모든 6개 번호 조합은 실제 당첨확률이 같습니다.</p>
     </section>
 
-    <section class="winning-section" aria-labelledby="winning-title">
+    <section class="winning-section" id="winning-section" aria-labelledby="winning-title">
       <div class="winning-intro">
         <div>
           <p class="label">OFFICIAL DRAW CHECK</p>
@@ -177,7 +203,7 @@
       </article>
     </section>
 
-    <section class="history-section" aria-labelledby="history-title">
+    <section class="history-section" id="history-section" aria-labelledby="history-title">
       <div class="section-heading">
         <div>
           <h2 id="history-title">데이터베이스 추첨 기록</h2>

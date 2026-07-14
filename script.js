@@ -520,7 +520,7 @@ async function recommendNumbers() {
 function useRecommendedNumbers() {
   if (!recommendedNumbers.length) return;
   recordNumbers(recommendedNumbers, '통계 추천번호를 선택했어요!');
-  window.scrollTo({ top: document.querySelector('.draw-card').offsetTop - 24, behavior: 'smooth' });
+  document.querySelector('#draw-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function getPrizeResult(numbers, draw) {
@@ -618,9 +618,9 @@ function roundedRect(ctx, x, y, width, height, radius) {
 }
 
 function drawCanvasBall(ctx, number, x, y, radius, matched = false) {
-  const colors = { yellow: '#f1b83a', blue: '#4e8db4', red: '#e9654b', gray: '#8e9895', green: '#55a878' };
+  const colors = { yellow: '#f2b73b', blue: '#3b8ccf', red: '#ef6b52', gray: '#9aa3ad', green: '#32a067' };
   if (matched) {
-    ctx.fillStyle = '#173c34';
+    ctx.fillStyle = '#0064e0';
     ctx.beginPath();
     ctx.arc(x, y, radius + 6, 0, Math.PI * 2);
     ctx.fill();
@@ -646,48 +646,66 @@ async function saveResultImage() {
   canvas.width = 1200;
   canvas.height = 630;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#f4f1e9';
+  ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = 'rgba(232, 93, 53, .08)';
+  ctx.fillStyle = 'rgba(0, 100, 224, .09)';
   ctx.beginPath();
-  ctx.arc(1090, 70, 210, 0, Math.PI * 2);
+  ctx.arc(1108, 74, 220, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#173c34';
-  ctx.font = '700 28px "Noto Sans KR", sans-serif';
+  ctx.fillStyle = '#0a1317';
+  ctx.font = '700 28px "DM Sans", "Noto Sans KR", sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText('✣  행운 번호 연구소', 72, 78);
-  ctx.fillStyle = '#e85d35';
-  ctx.font = '700 15px "DM Sans", sans-serif';
-  ctx.fillText('MY LUCKY NUMBERS', 74, 148);
-  ctx.fillStyle = '#173c34';
-  ctx.font = '700 52px "Noto Sans KR", sans-serif';
-  ctx.fillText('오늘의 행운을 담은 여섯 숫자', 72, 215);
+  ctx.fillStyle = '#0064e0';
+  ctx.font = '700 15px "DM Sans", "Noto Sans KR", sans-serif';
+  ctx.fillText('OFFICIAL CHECK · SHARE READY', 74, 148);
+  ctx.fillStyle = '#0a1317';
+  ctx.font = '600 52px "Noto Sans KR", sans-serif';
+  ctx.fillText('오늘의 행운 번호', 72, 214);
+  ctx.fillStyle = '#5d6c7b';
+  ctx.font = '400 18px "Noto Sans KR", sans-serif';
+  ctx.fillText('공식 결과와 비교하고, 통계 추천과 함께 저장해요.', 74, 252);
 
-  currentNumbers.forEach((number, index) => drawCanvasBall(ctx, number, 132 + (index * 128), 330, 48));
+  currentNumbers.forEach((number, index) => drawCanvasBall(ctx, number, 132 + (index * 128), 334, 48));
 
   if (currentOfficialDraw) {
     const prize = getPrizeResult(currentNumbers, currentOfficialDraw);
-    ctx.fillStyle = '#fffefa';
-    roundedRect(ctx, 72, 426, 1056, 108, 10);
-    ctx.fillStyle = '#173c34';
+    ctx.fillStyle = '#f5f7fa';
+    roundedRect(ctx, 72, 426, 1056, 112, 24);
+    ctx.fillStyle = '#0064e0';
+    roundedRect(ctx, 104, 446, 106, 32, 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.font = '700 12px "DM Sans", sans-serif';
+    ctx.fillText('OFFICIAL', 157, 467);
+    ctx.fillStyle = '#0a1317';
+    ctx.textAlign = 'left';
     ctx.font = '700 22px "Noto Sans KR", sans-serif';
-    ctx.fillText(`${currentOfficialDraw.round}회 비교 결과 · ${prize.label}`, 104, 469);
-    ctx.fillStyle = '#7f8b84';
+    ctx.fillText(`${currentOfficialDraw.round}회 비교 결과`, 104, 504);
+    ctx.fillStyle = '#5d6c7b';
     ctx.font = '500 16px "Noto Sans KR", sans-serif';
-    ctx.fillText(prize.detail, 104, 505);
+    ctx.fillText(prize.detail, 104, 532);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#0a1317';
+    ctx.font = '700 30px "DM Sans", "Noto Sans KR", sans-serif';
+    ctx.fillText(prize.label, 1084, 492);
+    ctx.fillStyle = '#0064e0';
+    ctx.font = '700 12px "DM Sans", sans-serif';
+    ctx.fillText('MATCH STATUS', 1084, 516);
   } else {
-    ctx.fillStyle = '#7f8b84';
+    ctx.fillStyle = '#5d6c7b';
     ctx.font = '500 18px "Noto Sans KR", sans-serif';
-    ctx.fillText('작은 설렘이 필요한 순간을 위해.', 74, 464);
+    ctx.fillText('작은 설렘이 필요한 순간을 위해.', 74, 478);
   }
 
-  ctx.fillStyle = '#8c9691';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#8595a4';
   ctx.font = '500 14px "Noto Sans KR", sans-serif';
   ctx.fillText('무작위로 생성된 번호이며 당첨을 보장하지 않아요.', 72, 588);
   ctx.textAlign = 'right';
-  ctx.fillStyle = '#173c34';
+  ctx.fillStyle = '#0a1317';
   ctx.font = '700 13px "DM Sans", sans-serif';
   ctx.fillText('GOOD LUCK ✦', 1128, 588);
 
