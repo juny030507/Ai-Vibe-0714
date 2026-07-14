@@ -73,9 +73,9 @@
         <div>
           <p class="label">STATISTICAL PICK</p>
           <h2 id="recommendation-title">최근 당첨 흐름으로 추천받기</h2>
-          <p>최근 30회 당첨번호의 출현 빈도와 미출현 기간을 함께 분석해 균형 잡힌 조합을 만들어요.</p>
+          <p>최근 100회 당첨번호의 출현 빈도와 미출현 기간을 함께 분석해 균형 잡힌 조합을 만들어요.</p>
         </div>
-        <span class="analysis-badge">최근 30회 분석</span>
+        <span class="analysis-badge">최근 100회 분석</span>
       </div>
 
       <div class="recommendation-panel">
@@ -104,11 +104,11 @@
         <div class="weight-list">
           <div class="weight-item frequency">
             <div><strong>45점</strong><span>최근 빈도</span></div>
-            <p>최근 30회에서 자주 등장했는지 봐요.</p>
+            <p>최근 100회에서 자주 등장했는지 봐요.</p>
           </div>
           <div class="weight-item trend">
             <div><strong>25점</strong><span>단기 흐름</span></div>
-            <p>그중 최근 10회의 출현 흐름을 반영해요.</p>
+            <p>그중 최근 20회의 출현 흐름을 반영해요.</p>
           </div>
           <div class="weight-item overdue">
             <div><strong>30점</strong><span>미출현 기간</span></div>
@@ -179,8 +179,14 @@
 
     <section class="history-section" aria-labelledby="history-title">
       <div class="section-heading">
-        <h2 id="history-title">최근 추첨</h2>
-        <button id="clearButton" type="button">기록 지우기</button>
+        <div>
+          <h2 id="history-title">데이터베이스 추첨 기록</h2>
+          <p id="historyStatus" aria-live="polite">Supabase 저장 기록을 불러오고 있어요.</p>
+        </div>
+        <div class="history-actions">
+          <button id="refreshHistoryButton" type="button">새로고침</button>
+          <button id="clearButton" type="button">내 기기 기록 지우기</button>
+        </div>
       </div>
       <div class="history-list" id="historyList">
         <div class="empty-history">
@@ -188,6 +194,7 @@
           <span class="empty-line"></span>
         </div>
       </div>
+      <button class="history-more-button" id="loadMoreHistoryButton" type="button" hidden>더보기</button>
     </section>
 
     <footer>

@@ -5,7 +5,10 @@ const copyButton = document.querySelector('#copyButton');
 const shareButton = document.querySelector('#shareButton');
 const saveImageButton = document.querySelector('#saveImageButton');
 const clearButton = document.querySelector('#clearButton');
+const refreshHistoryButton = document.querySelector('#refreshHistoryButton');
+const loadMoreHistoryButton = document.querySelector('#loadMoreHistoryButton');
 const historyList = document.querySelector('#historyList');
+const historyStatus = document.querySelector('#historyStatus');
 const statusText = document.querySelector('#statusText');
 const drawCount = document.querySelector('#drawCount');
 const today = document.querySelector('#today');
@@ -28,12 +31,20 @@ const numberAnalysisList = document.querySelector('#numberAnalysisList');
 
 const HISTORY_KEY = 'lucky-number-history';
 const OFFICIAL_API = 'https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do';
+const LOCAL_HISTORY_LIMIT = 50;
+const DATABASE_HISTORY_LIMIT = 50;
+const HISTORY_PAGE_SIZE = 10;
+const ANALYSIS_DRAW_COUNT = 100;
+const TREND_DRAW_COUNT = 20;
 let history = loadHistory();
 let currentNumbers = history[0]?.numbers || [];
 let currentOfficialDraw = null;
 let isDrawing = false;
 let recentDrawsPromise = null;
 let recommendedNumbers = [];
+let databaseHistoryLoading = false;
+let displayedHistoryItems = [];
+let visibleHistoryCount = HISTORY_PAGE_SIZE;
 
 today.textContent = new Intl.DateTimeFormat('ko-KR', {
   year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
@@ -45,7 +56,7 @@ roundInput.max = estimateLatestRound();
 function loadHistory() {
   try {
     const data = JSON.parse(localStorage.getItem(HISTORY_KEY));
-    return Array.isArray(data) ? data.slice(0, 5) : [];
+    return Array.isArray(data) ? data.slice(0, LOCAL_HISTORY_LIMIT) : [];
   } catch {
     return [];
   }
@@ -86,21 +97,51 @@ function renderMain(numbers, animated = false) {
   });
 }
 
-function renderHistory() {
-  if (!history.length) {
+function renderHistory(items = history) {
+  if (!items.length) {
     historyList.innerHTML = '<div class="empty-history"><span>아직 추첨 기록이 없어요.</span><span class="empty-line"></span></div>';
     return;
   }
 
-  historyList.innerHTML = history.map((item, index) => `
+  historyList.innerHTML = items.map((item, index) => `
     <div class="history-item">
       <span class="history-index">${String(index + 1).padStart(2, '0')}</span>
       <div class="mini-balls">
         ${item.numbers.map(number => `<span class="mini-ball ${getColor(number)}">${number}</span>`).join('')}
       </div>
-      <time class="history-time">${item.time}</time>
+      <time class="history-time">${item.time || formatDatabaseTime(item.created_at)}</time>
     </div>
   `).join('');
+}
+
+function setHistoryItems(items, reset = true) {
+  displayedHistoryItems = [...items];
+  if (reset) visibleHistoryCount = HISTORY_PAGE_SIZE;
+  renderHistory(displayedHistoryItems.slice(0, visibleHistoryCount));
+
+  if (displayedHistoryItems.length <= HISTORY_PAGE_SIZE) {
+    loadMoreHistoryButton.hidden = true;
+    return;
+  }
+
+  loadMoreHistoryButton.hidden = false;
+  loadMoreHistoryButton.textContent = visibleHistoryCount >= displayedHistoryItems.length
+    ? `접기 · 전체 ${displayedHistoryItems.length}개`
+    : `더보기 · ${Math.min(visibleHistoryCount, displayedHistoryItems.length)} / ${displayedHistoryItems.length}개`;
+}
+
+function toggleMoreHistory() {
+  visibleHistoryCount = visibleHistoryCount >= displayedHistoryItems.length
+    ? HISTORY_PAGE_SIZE
+    : Math.min(visibleHistoryCount + HISTORY_PAGE_SIZE, displayedHistoryItems.length);
+  setHistoryItems(displayedHistoryItems, false);
+}
+
+function formatDatabaseTime(value) {
+  if (!value) return '';
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+  }).format(new Date(value));
 }
 
 function showShuffle() {
@@ -137,11 +178,11 @@ function recordNumbers(numbers, message) {
     numbers: currentNumbers,
     time: new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit' }).format(now)
   });
-  history = history.slice(0, 5);
+  history = history.slice(0, LOCAL_HISTORY_LIMIT);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 
   renderMain(currentNumbers, true);
-  renderHistory();
+  setHistoryItems(history);
   drawCount.textContent = `# ${String(history.length).padStart(3, '0')}`;
   statusText.textContent = message;
   buttonText.textContent = '한 번 더 뽑기';
@@ -170,12 +211,41 @@ async function saveDrawToDatabase(numbers) {
     }
     databaseStatus.textContent = 'SUPABASE 저장됨';
     databaseStatus.className = 'db-status saved';
+    loadDatabaseHistory();
   } catch (error) {
     databaseStatus.textContent = {
       API_NOT_FOUND: 'VERCEL 배포 시 DB 저장',
       SETUP_REQUIRED: 'DB 환경변수 설정 필요'
     }[error.message] || 'DB 저장 실패';
     databaseStatus.className = 'db-status error';
+  }
+}
+
+async function loadDatabaseHistory() {
+  if (databaseHistoryLoading) return;
+  databaseHistoryLoading = true;
+  refreshHistoryButton.disabled = true;
+  historyStatus.textContent = `Supabase에서 최근 ${DATABASE_HISTORY_LIMIT}개 기록을 불러오고 있어요.`;
+
+  try {
+    const response = await fetch(`/api/draws?limit=${DATABASE_HISTORY_LIMIT}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(response.status === 503 ? 'SETUP_REQUIRED' : 'LOAD_FAILED');
+    const payload = await response.json();
+    const draws = Array.isArray(payload?.draws) ? payload.draws : [];
+    setHistoryItems(draws);
+
+    const totalText = Number.isInteger(payload?.total) ? `총 ${payload.total}개 중 ` : '';
+    historyStatus.textContent = `${totalText}최근 ${draws.length}개 저장 기록이에요. 새 번호는 삭제 없이 계속 누적돼요.`;
+    historyStatus.classList.remove('error');
+  } catch (error) {
+    setHistoryItems(history);
+    historyStatus.textContent = error.message === 'SETUP_REQUIRED'
+      ? `Supabase 설정 전이라 이 기기의 최근 ${history.length}개 기록을 보여드려요.`
+      : `DB에 연결하지 못해 이 기기의 최근 ${history.length}개 기록을 보여드려요.`;
+    historyStatus.classList.add('error');
+  } finally {
+    databaseHistoryLoading = false;
+    refreshHistoryButton.disabled = false;
   }
 }
 
@@ -262,28 +332,50 @@ async function fetchOfficialDrawBatch(direction, round) {
 async function loadRecentOfficialDraws() {
   if (recentDrawsPromise) return recentDrawsPromise;
   recentDrawsPromise = (async () => {
+    const drawsByRound = new Map();
+
     try {
-      const drawsByRound = new Map();
+      const response = await fetch('./data/official-draws.json', { cache: 'no-cache' });
+      if (response.ok) {
+        const payload = await response.json();
+        (payload?.draws || []).forEach(draw => drawsByRound.set(draw.round, {
+          ...draw,
+          date: formatOfficialDate(draw.date)
+        }));
+      }
+    } catch {
+      // 정적 파일을 직접 연 환경에서는 공식 API 데이터만 사용합니다.
+    }
+
+    if (drawsByRound.size) {
+      try {
+        let cursor = Math.max(...drawsByRound.keys());
+        for (let page = 0; page < 25; page += 1) {
+          const newerDraws = (await fetchOfficialDrawBatch('latest', cursor))
+            .filter(draw => draw.round > cursor);
+          if (!newerDraws.length) break;
+          newerDraws.forEach(draw => drawsByRound.set(draw.round, draw));
+          cursor = Math.max(...newerDraws.map(draw => draw.round));
+          if (newerDraws.length < 10) break;
+        }
+      } catch {
+        // 공식 사이트가 일시적으로 응답하지 않아도 배포 시점 데이터로 분석합니다.
+      }
+    } else {
       const firstBatch = await fetchOfficialDrawBatch('center', estimateLatestRound());
       firstBatch.forEach(draw => drawsByRound.set(draw.round, draw));
 
-      while (drawsByRound.size < 30) {
+      while (drawsByRound.size < ANALYSIS_DRAW_COUNT) {
         const oldestRound = Math.min(...drawsByRound.keys());
         const olderDraws = await fetchOfficialDrawBatch('older', oldestRound);
         if (!olderDraws.length) break;
         olderDraws.forEach(draw => drawsByRound.set(draw.round, draw));
       }
-
-      return [...drawsByRound.values()].sort((a, b) => b.round - a.round).slice(0, 30);
-    } catch {
-      const response = await fetch('./data/official-draws.json', { cache: 'no-cache' });
-      if (!response.ok) throw new Error('HISTORY_LOAD_FAILED');
-      const payload = await response.json();
-      return (payload?.draws || []).slice(-30).reverse().map(draw => ({
-        ...draw,
-        date: formatOfficialDate(draw.date)
-      }));
     }
+
+    return [...drawsByRound.values()]
+      .sort((a, b) => b.round - a.round)
+      .slice(0, ANALYSIS_DRAW_COUNT);
   })();
   return recentDrawsPromise;
 }
@@ -296,7 +388,7 @@ function analyzeRecentDraws(draws) {
   draws.forEach((draw, drawIndex) => {
     draw.numbers.forEach(number => {
       frequency[number] += 1;
-      if (drawIndex < 10) recentFrequency[number] += 1;
+      if (drawIndex < TREND_DRAW_COUNT) recentFrequency[number] += 1;
       if (lastSeen[number] === draws.length) lastSeen[number] = drawIndex;
     });
   });
@@ -382,7 +474,7 @@ function renderNumberAnalysis(numbers, analysis, drawCount) {
             <span>과거 출현율 ${appearanceRate}%</span>
           </div>
           <div class="score-bar" aria-label="추천지수 ${index}점"><i style="width:${index}%"></i></div>
-          <p class="score-detail">30회 중 ${analysis.frequency[number]}번 · 최근 10회 ${analysis.recentFrequency[number]}번 · ${gap}</p>
+          <p class="score-detail">${drawCount}회 중 ${analysis.frequency[number]}번 · 최근 ${TREND_DRAW_COUNT}회 ${analysis.recentFrequency[number]}번 · ${gap}</p>
           <div class="score-parts">
             <span>빈도 ${points.frequency}/45</span>
             <span>흐름 ${points.trend}/25</span>
@@ -396,13 +488,13 @@ function renderNumberAnalysis(numbers, analysis, drawCount) {
 
 async function recommendNumbers() {
   recommendButton.disabled = true;
-  recommendButton.textContent = '최근 30회 분석 중...';
+  recommendButton.textContent = `최근 ${ANALYSIS_DRAW_COUNT}회 분석 중...`;
   recommendationStatus.textContent = '동행복권 공식 당첨번호를 불러오고 있어요.';
   recommendationStatus.classList.remove('error');
 
   try {
     const draws = await loadRecentOfficialDraws();
-    if (draws.length < 30) throw new Error('NOT_ENOUGH_DRAWS');
+    if (draws.length < ANALYSIS_DRAW_COUNT) throw new Error('NOT_ENOUGH_DRAWS');
     const analysis = analyzeRecentDraws(draws);
     recommendedNumbers = buildRecommendation(analysis.scores);
     renderRecommendation(recommendedNumbers);
@@ -622,7 +714,7 @@ function clearHistory() {
   currentNumbers = [];
   localStorage.removeItem(HISTORY_KEY);
   ballsEl.innerHTML = Array.from({ length: 6 }, () => '<div class="ball placeholder">?</div>').join('');
-  renderHistory();
+  setHistoryItems(history);
   drawCount.textContent = '# 001';
   statusText.textContent = '버튼을 누르면 번호를 뽑아드려요.';
   buttonText.textContent = '행운 번호 뽑기';
@@ -630,6 +722,7 @@ function clearHistory() {
   shareButton.disabled = true;
   saveImageButton.disabled = true;
   if (currentOfficialDraw) renderOfficialDraw(currentOfficialDraw);
+  loadDatabaseHistory();
 }
 
 drawButton.addEventListener('click', drawNumbers);
@@ -637,6 +730,8 @@ copyButton.addEventListener('click', copyResult);
 shareButton.addEventListener('click', shareResult);
 saveImageButton.addEventListener('click', saveResultImage);
 clearButton.addEventListener('click', clearHistory);
+refreshHistoryButton.addEventListener('click', loadDatabaseHistory);
+loadMoreHistoryButton.addEventListener('click', toggleMoreHistory);
 lookupButton.addEventListener('click', lookupOfficialDraw);
 recommendButton.addEventListener('click', recommendNumbers);
 useRecommendationButton.addEventListener('click', useRecommendedNumbers);
@@ -646,7 +741,7 @@ roundInput.addEventListener('keydown', event => {
 
 if (currentNumbers.length) {
   renderMain(currentNumbers);
-  renderHistory();
+  setHistoryItems(history);
   copyButton.disabled = false;
   shareButton.disabled = false;
   saveImageButton.disabled = false;
@@ -654,3 +749,5 @@ if (currentNumbers.length) {
   buttonText.textContent = '한 번 더 뽑기';
   drawCount.textContent = `# ${String(history.length).padStart(3, '0')}`;
 }
+
+loadDatabaseHistory();

@@ -59,7 +59,11 @@ export default {
       }
 
       if (request.method === 'GET') {
-        const response = await fetch(`${endpoint}?select=id,numbers,created_at&order=created_at.desc&limit=10`, { headers });
+        const requestedLimit = Number.parseInt(new URL(request.url).searchParams.get('limit'), 10);
+        const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : 50;
+        const response = await fetch(`${endpoint}?select=id,numbers,created_at&order=created_at.desc&limit=${limit}`, {
+          headers: { ...headers, Prefer: 'count=exact' }
+        });
         const data = await response.json().catch(() => null);
 
         if (!response.ok) {
@@ -67,7 +71,13 @@ export default {
           return json({ error: '저장된 번호를 불러오지 못했습니다.' }, 502);
         }
 
-        return json({ draws: data });
+        const contentRange = response.headers.get('content-range');
+        const total = Number.parseInt(contentRange?.split('/')[1], 10);
+        return json({
+          draws: data,
+          limit,
+          total: Number.isInteger(total) ? total : null
+        });
       }
 
       return new Response(JSON.stringify({ error: '지원하지 않는 요청 방식입니다.' }), {
