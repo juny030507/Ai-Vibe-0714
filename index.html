@@ -5,9 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f5f2ea">
   <title>행운 번호 연구소</title>
+  <meta name="description" content="로또 6/45 행운 번호를 만들고 실제 당첨번호와 비교해 보세요.">
+  <meta property="og:title" content="행운 번호 연구소">
+  <meta property="og:description" content="오늘의 행운 번호를 만들고 실제 로또 결과와 비교해 보세요.">
+  <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -32,7 +36,10 @@
           <p class="label">YOUR LUCKY NUMBERS</p>
           <p class="hint" id="statusText" aria-live="polite">버튼을 누르면 번호를 뽑아드려요.</p>
         </div>
-        <span class="draw-count" id="drawCount"># 001</span>
+        <div class="card-meta">
+          <span class="draw-count" id="drawCount"># 001</span>
+          <span class="db-status" id="databaseStatus" aria-live="polite">DB 저장 대기</span>
+        </div>
       </div>
 
       <div class="balls" id="balls" aria-label="추첨 번호">
@@ -49,10 +56,50 @@
           <span id="buttonText">행운 번호 뽑기</span>
           <span class="button-icon" aria-hidden="true">→</span>
         </button>
-        <button class="copy-button" id="copyButton" type="button" disabled aria-label="결과 복사">
+        <button class="icon-button" id="copyButton" type="button" disabled aria-label="결과 복사" title="결과 복사">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
         </button>
+        <button class="icon-button" id="shareButton" type="button" disabled aria-label="결과 공유" title="결과 공유">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"></circle><circle cx="6" cy="12" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"></path></svg>
+        </button>
+        <button class="icon-button" id="saveImageButton" type="button" disabled aria-label="이미지로 저장" title="이미지로 저장">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5"></path><path d="M5 18v2h14v-2"></path></svg>
+        </button>
       </div>
+    </section>
+
+    <section class="winning-section" aria-labelledby="winning-title">
+      <div class="winning-intro">
+        <div>
+          <p class="label">OFFICIAL DRAW CHECK</p>
+          <h2 id="winning-title">실제 당첨번호와 비교하기</h2>
+          <p>동행복권에서 발표한 회차별 결과를 불러와 내 번호와 비교해요.</p>
+        </div>
+        <a href="https://www.dhlottery.co.kr/lt645/result" target="_blank" rel="noopener noreferrer">공식 결과 보기 ↗</a>
+      </div>
+
+      <div class="lookup-row">
+        <label for="roundInput">조회 회차</label>
+        <div class="round-field">
+          <input id="roundInput" type="number" inputmode="numeric" min="1" step="1" aria-describedby="lookupStatus">
+          <span>회</span>
+        </div>
+        <button class="lookup-button" id="lookupButton" type="button">조회하고 비교</button>
+      </div>
+
+      <p class="lookup-status" id="lookupStatus" aria-live="polite">최신 회차가 자동으로 입력되어 있어요.</p>
+
+      <article class="winning-result" id="winningResult" hidden>
+        <div class="winning-result-head">
+          <div>
+            <strong id="officialRound"></strong>
+            <time id="officialDate"></time>
+          </div>
+          <span class="official-badge">동행복권 공식</span>
+        </div>
+        <div class="official-numbers" id="officialNumbers" aria-label="공식 당첨번호"></div>
+        <div class="comparison" id="comparisonResult"></div>
+      </article>
     </section>
 
     <section class="history-section" aria-labelledby="history-title">
@@ -69,7 +116,7 @@
     </section>
 
     <footer>
-      <p>숫자는 무작위로 생성되며, 당첨을 보장하지 않아요.</p>
+      <p>숫자는 무작위로 생성되며, 당첨을 보장하지 않아요. 실제 지급 여부는 공식 복권으로 확인하세요.</p>
       <span>GOOD LUCK <b>✦</b></span>
     </footer>
   </main>
