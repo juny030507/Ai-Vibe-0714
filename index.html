@@ -68,6 +68,36 @@
       </div>
     </section>
 
+    <section class="recommendation-section" aria-labelledby="recommendation-title">
+      <div class="recommendation-intro">
+        <div>
+          <p class="label">STATISTICAL PICK</p>
+          <h2 id="recommendation-title">최근 당첨 흐름으로 추천받기</h2>
+          <p>최근 30회 당첨번호의 출현 빈도와 미출현 기간을 함께 분석해 균형 잡힌 조합을 만들어요.</p>
+        </div>
+        <span class="analysis-badge">최근 30회 분석</span>
+      </div>
+
+      <div class="recommendation-panel">
+        <div class="recommendation-balls" id="recommendationBalls" aria-label="통계 추천번호">
+          <span class="recommendation-ball placeholder">?</span>
+          <span class="recommendation-ball placeholder">?</span>
+          <span class="recommendation-ball placeholder">?</span>
+          <span class="recommendation-ball placeholder">?</span>
+          <span class="recommendation-ball placeholder">?</span>
+          <span class="recommendation-ball placeholder">?</span>
+        </div>
+        <div class="recommendation-actions">
+          <button class="recommend-button" id="recommendButton" type="button">통계 추천번호 만들기</button>
+          <button class="use-recommendation-button" id="useRecommendationButton" type="button" hidden>이 번호로 선택</button>
+        </div>
+      </div>
+
+      <p class="recommendation-status" id="recommendationStatus" aria-live="polite">추천할 때마다 가중치 안에서 새로운 조합을 만들어요.</p>
+      <div class="analysis-summary" id="analysisSummary" hidden></div>
+      <p class="probability-note">※ 과거 통계는 재미를 위한 참고 자료이며, 로또의 모든 6개 번호 조합은 실제 당첨확률이 같습니다.</p>
+    </section>
+
     <section class="winning-section" aria-labelledby="winning-title">
       <div class="winning-intro">
         <div>

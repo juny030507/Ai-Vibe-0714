@@ -319,6 +319,69 @@ h1 em { color: var(--accent); font-style: normal; font-weight: 500; }
 .comparison.near { background: #fbefe8; border-left-color: var(--accent); }
 .comparison strong { font-size: 15px; }
 .comparison span { color: var(--muted); font-size: 12px; text-align: right; }
+.recommendation-section { padding: 58px 0 64px; border-top: 1px solid var(--line); }
+.recommendation-intro { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; }
+.recommendation-intro h2 { margin: 8px 0 9px; font-size: 24px; letter-spacing: -.05em; }
+.recommendation-intro p:not(.label) { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.analysis-badge {
+  flex: none;
+  padding: 7px 11px;
+  color: var(--ink);
+  background: #e7eee9;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.recommendation-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 28px;
+  padding: 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.recommendation-balls { display: flex; align-items: center; gap: 10px; }
+.recommendation-ball {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: inset -4px -5px 8px rgba(0,0,0,.1);
+  animation: reveal .35s ease both;
+}
+.recommendation-ball.placeholder { color: #9ba39f; background: #eeece5; box-shadow: none; animation: none; }
+.recommendation-ball.yellow { background: var(--yellow); }
+.recommendation-ball.blue { background: var(--blue); }
+.recommendation-ball.red { background: var(--red); }
+.recommendation-ball.gray { background: var(--gray); }
+.recommendation-ball.green { background: var(--green); }
+.recommendation-actions { display: flex; gap: 8px; }
+.recommend-button, .use-recommendation-button {
+  min-height: 46px;
+  padding: 0 17px;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  transition: transform .18s ease, opacity .18s ease;
+}
+.recommend-button { color: white; background: var(--ink); }
+.use-recommendation-button { color: var(--ink); background: #e7eee9; }
+.recommend-button:hover:not(:disabled), .use-recommendation-button:hover { transform: translateY(-2px); }
+.recommend-button:disabled { cursor: wait; opacity: .65; }
+.recommendation-status { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
+.recommendation-status.error { color: #c94b33; }
+.analysis-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.analysis-summary span { padding: 8px 10px; color: var(--muted); background: #efede6; font-size: 10px; }
+.analysis-summary b { color: var(--ink); }
+.probability-note { margin: 14px 0 0; color: #969e99; font-size: 10px; line-height: 1.65; }
 
 .history-section { padding: 72px 0 40px; }
 .section-heading { padding-bottom: 17px; border-bottom: 1px solid var(--line); }
@@ -392,6 +455,15 @@ footer b { color: var(--accent); }
   .card-actions { flex-wrap: wrap; }
   .draw-button { width: 100%; min-width: 0; }
   .icon-button { width: 52px; height: 52px; flex-basis: 52px; }
+  .recommendation-section { padding: 48px 0 54px; }
+  .recommendation-intro { display: block; }
+  .recommendation-intro h2 { font-size: 21px; }
+  .analysis-badge { display: inline-block; margin-top: 13px; }
+  .recommendation-panel { align-items: stretch; flex-direction: column; padding: 18px; }
+  .recommendation-balls { justify-content: center; gap: 5px; }
+  .recommendation-ball { width: calc((100vw - 83px) / 6); height: calc((100vw - 83px) / 6); max-width: 44px; max-height: 44px; }
+  .recommendation-actions { flex-direction: column; }
+  .recommend-button, .use-recommendation-button { width: 100%; }
   .winning-section { padding: 28px 18px 30px; }
   .winning-intro { display: block; }
   .winning-intro h2 { font-size: 21px; }

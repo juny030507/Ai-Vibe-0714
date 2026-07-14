@@ -18,6 +18,11 @@ const officialDate = document.querySelector('#officialDate');
 const officialNumbers = document.querySelector('#officialNumbers');
 const comparisonResult = document.querySelector('#comparisonResult');
 const databaseStatus = document.querySelector('#databaseStatus');
+const recommendationBalls = document.querySelector('#recommendationBalls');
+const recommendButton = document.querySelector('#recommendButton');
+const useRecommendationButton = document.querySelector('#useRecommendationButton');
+const recommendationStatus = document.querySelector('#recommendationStatus');
+const analysisSummary = document.querySelector('#analysisSummary');
 
 const HISTORY_KEY = 'lucky-number-history';
 const OFFICIAL_API = 'https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do';
@@ -25,6 +30,8 @@ let history = loadHistory();
 let currentNumbers = history[0]?.numbers || [];
 let currentOfficialDraw = null;
 let isDrawing = false;
+let recentDrawsPromise = null;
+let recommendedNumbers = [];
 
 today.textContent = new Intl.DateTimeFormat('ko-KR', {
   year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
@@ -115,7 +122,14 @@ async function drawNumbers() {
   await new Promise(resolve => setTimeout(resolve, 900));
   clearInterval(shuffleTimer);
 
-  currentNumbers = generateNumbers();
+  recordNumbers(generateNumbers(), '오늘의 행운 번호가 도착했어요!');
+  buttonText.textContent = '한 번 더 뽑기';
+  drawButton.disabled = false;
+  isDrawing = false;
+}
+
+function recordNumbers(numbers, message) {
+  currentNumbers = [...numbers];
   const now = new Date();
   history.unshift({
     numbers: currentNumbers,
@@ -127,15 +141,13 @@ async function drawNumbers() {
   renderMain(currentNumbers, true);
   renderHistory();
   drawCount.textContent = `# ${String(history.length).padStart(3, '0')}`;
-  statusText.textContent = '오늘의 행운 번호가 도착했어요!';
+  statusText.textContent = message;
   buttonText.textContent = '한 번 더 뽑기';
-  drawButton.disabled = false;
   copyButton.disabled = false;
   shareButton.disabled = false;
   saveImageButton.disabled = false;
   if (currentOfficialDraw) renderOfficialDraw(currentOfficialDraw);
   saveDrawToDatabase(currentNumbers);
-  isDrawing = false;
 }
 
 async function saveDrawToDatabase(numbers) {
@@ -233,6 +245,150 @@ function normalizeOfficialDraw(item) {
     numbers: [1, 2, 3, 4, 5, 6].map(index => Number(item[`tm${index}WnNo`])),
     bonus: Number(item.bnsWnNo)
   };
+}
+
+async function fetchOfficialDrawBatch(direction, round) {
+  const url = new URL(OFFICIAL_API);
+  url.searchParams.set('srchDir', direction);
+  url.searchParams.set(direction === 'center' ? 'srchLtEpsd' : 'srchCursorLtEpsd', round);
+  const response = await fetch(url, { credentials: 'omit' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const payload = await response.json();
+  return (payload?.data?.list || []).map(normalizeOfficialDraw);
+}
+
+async function loadRecentOfficialDraws() {
+  if (recentDrawsPromise) return recentDrawsPromise;
+  recentDrawsPromise = (async () => {
+    try {
+      const drawsByRound = new Map();
+      const firstBatch = await fetchOfficialDrawBatch('center', estimateLatestRound());
+      firstBatch.forEach(draw => drawsByRound.set(draw.round, draw));
+
+      while (drawsByRound.size < 30) {
+        const oldestRound = Math.min(...drawsByRound.keys());
+        const olderDraws = await fetchOfficialDrawBatch('older', oldestRound);
+        if (!olderDraws.length) break;
+        olderDraws.forEach(draw => drawsByRound.set(draw.round, draw));
+      }
+
+      return [...drawsByRound.values()].sort((a, b) => b.round - a.round).slice(0, 30);
+    } catch {
+      const response = await fetch('./data/official-draws.json', { cache: 'no-cache' });
+      if (!response.ok) throw new Error('HISTORY_LOAD_FAILED');
+      const payload = await response.json();
+      return (payload?.draws || []).slice(-30).reverse().map(draw => ({
+        ...draw,
+        date: formatOfficialDate(draw.date)
+      }));
+    }
+  })();
+  return recentDrawsPromise;
+}
+
+function analyzeRecentDraws(draws) {
+  const frequency = Array(46).fill(0);
+  const recentFrequency = Array(46).fill(0);
+  const lastSeen = Array(46).fill(draws.length);
+
+  draws.forEach((draw, drawIndex) => {
+    draw.numbers.forEach(number => {
+      frequency[number] += 1;
+      if (drawIndex < 10) recentFrequency[number] += 1;
+      if (lastSeen[number] === draws.length) lastSeen[number] = drawIndex;
+    });
+  });
+
+  const maxFrequency = Math.max(...frequency);
+  const maxRecentFrequency = Math.max(...recentFrequency);
+  const scores = Array(46).fill(0);
+  for (let number = 1; number <= 45; number += 1) {
+    scores[number] = (frequency[number] / maxFrequency * .45)
+      + (recentFrequency[number] / maxRecentFrequency * .25)
+      + (lastSeen[number] / draws.length * .30)
+      + .08;
+  }
+
+  const numbers = Array.from({ length: 45 }, (_, index) => index + 1);
+  const hot = [...numbers].sort((a, b) => frequency[b] - frequency[a] || recentFrequency[b] - recentFrequency[a]).slice(0, 5);
+  const overdue = [...numbers].sort((a, b) => lastSeen[b] - lastSeen[a] || frequency[a] - frequency[b]).slice(0, 5);
+  return { frequency, lastSeen, scores, hot, overdue };
+}
+
+function weightedSample(scores) {
+  const available = Array.from({ length: 45 }, (_, index) => index + 1);
+  const selected = [];
+  while (selected.length < 6) {
+    const total = available.reduce((sum, number) => sum + scores[number], 0);
+    let point = Math.random() * total;
+    const index = available.findIndex(number => {
+      point -= scores[number];
+      return point <= 0;
+    });
+    selected.push(available.splice(index < 0 ? available.length - 1 : index, 1)[0]);
+  }
+  return selected.sort((a, b) => a - b);
+}
+
+function isBalancedCombination(numbers) {
+  const oddCount = numbers.filter(number => number % 2).length;
+  const lowCount = numbers.filter(number => number <= 22).length;
+  const sum = numbers.reduce((total, number) => total + number, 0);
+  const consecutivePairs = numbers.slice(1).filter((number, index) => number === numbers[index] + 1).length;
+  return oddCount >= 2 && oddCount <= 4
+    && lowCount >= 2 && lowCount <= 4
+    && sum >= 100 && sum <= 180
+    && consecutivePairs <= 2;
+}
+
+function buildRecommendation(scores) {
+  for (let attempt = 0; attempt < 300; attempt += 1) {
+    const numbers = weightedSample(scores);
+    if (isBalancedCombination(numbers)) return numbers;
+  }
+  return weightedSample(scores);
+}
+
+function renderRecommendation(numbers) {
+  recommendationBalls.innerHTML = numbers.map((number, index) => `
+    <span class="recommendation-ball ${getColor(number)}" style="animation-delay:${index * 55}ms">${number}</span>
+  `).join('');
+}
+
+async function recommendNumbers() {
+  recommendButton.disabled = true;
+  recommendButton.textContent = '최근 30회 분석 중...';
+  recommendationStatus.textContent = '동행복권 공식 당첨번호를 불러오고 있어요.';
+  recommendationStatus.classList.remove('error');
+
+  try {
+    const draws = await loadRecentOfficialDraws();
+    if (draws.length < 30) throw new Error('NOT_ENOUGH_DRAWS');
+    const analysis = analyzeRecentDraws(draws);
+    recommendedNumbers = buildRecommendation(analysis.scores);
+    renderRecommendation(recommendedNumbers);
+    useRecommendationButton.hidden = false;
+    recommendationStatus.textContent = `${draws.at(-1).round}회~${draws[0].round}회 분석을 반영한 추천 조합이에요.`;
+    analysisSummary.hidden = false;
+    analysisSummary.innerHTML = `
+      <span>자주 나온 번호 <b>${analysis.hot.join(' · ')}</b></span>
+      <span>오래 쉬어간 번호 <b>${analysis.overdue.join(' · ')}</b></span>
+      <span>추천 조합 합계 <b>${recommendedNumbers.reduce((sum, number) => sum + number, 0)}</b></span>
+    `;
+  } catch {
+    recommendationStatus.textContent = '최근 당첨번호를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+    recommendationStatus.classList.add('error');
+    recentDrawsPromise = null;
+  } finally {
+    recommendButton.disabled = false;
+    recommendButton.textContent = '다른 추천번호 만들기';
+  }
+}
+
+function useRecommendedNumbers() {
+  if (!recommendedNumbers.length) return;
+  recordNumbers(recommendedNumbers, '통계 추천번호를 선택했어요!');
+  window.scrollTo({ top: document.querySelector('.draw-card').offsetTop - 24, behavior: 'smooth' });
 }
 
 function getPrizeResult(numbers, draw) {
@@ -442,6 +598,8 @@ shareButton.addEventListener('click', shareResult);
 saveImageButton.addEventListener('click', saveResultImage);
 clearButton.addEventListener('click', clearHistory);
 lookupButton.addEventListener('click', lookupOfficialDraw);
+recommendButton.addEventListener('click', recommendNumbers);
+useRecommendationButton.addEventListener('click', useRecommendedNumbers);
 roundInput.addEventListener('keydown', event => {
   if (event.key === 'Enter') lookupOfficialDraw();
 });
