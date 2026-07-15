@@ -151,9 +151,19 @@ function showShuffle() {
   }).join('');
 }
 
+function trackAnalyticsEvent(name, params = {}) {
+  if (typeof window.gtag !== 'function') return;
+  window.gtag('event', name, params);
+}
+
 async function drawNumbers() {
   if (isDrawing) return;
   isDrawing = true;
+  trackAnalyticsEvent('lotto_draw_click', {
+    event_category: 'engagement',
+    event_label: 'draw_button',
+    draw_count_before_click: history.length
+  });
   drawButton.disabled = true;
   copyButton.disabled = true;
   shareButton.disabled = true;
