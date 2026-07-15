@@ -274,6 +274,11 @@ async function copyText(text) {
 
 async function copyResult() {
   if (!currentNumbers.length) return;
+  trackAnalyticsEvent('lotto_result_copy', {
+    event_category: 'engagement',
+    event_label: 'copy_button',
+    has_official_draw: Boolean(currentOfficialDraw)
+  });
   await copyText(buildShareText());
   statusText.textContent = '행운 번호를 복사했어요.';
   setTimeout(() => { statusText.textContent = '오늘의 행운 번호가 도착했어요!'; }, 1600);
@@ -296,6 +301,11 @@ function buildShareText() {
 
 async function shareResult() {
   if (!currentNumbers.length) return;
+  trackAnalyticsEvent('lotto_result_share', {
+    event_category: 'engagement',
+    event_label: 'share_button',
+    has_official_draw: Boolean(currentOfficialDraw)
+  });
   const shareData = { title: '행운 번호 연구소', text: buildShareText() };
 
   if (navigator.share) {
@@ -497,6 +507,12 @@ function renderNumberAnalysis(numbers, analysis, drawCount) {
 }
 
 async function recommendNumbers() {
+  trackAnalyticsEvent('lotto_recommend_click', {
+    event_category: 'engagement',
+    event_label: 'recommend_button',
+    analysis_draw_count: ANALYSIS_DRAW_COUNT,
+    trend_draw_count: TREND_DRAW_COUNT
+  });
   recommendButton.disabled = true;
   recommendButton.textContent = `최근 ${ANALYSIS_DRAW_COUNT}회 분석 중...`;
   recommendationStatus.textContent = '동행복권 공식 당첨번호를 불러오고 있어요.';
@@ -529,6 +545,10 @@ async function recommendNumbers() {
 
 function useRecommendedNumbers() {
   if (!recommendedNumbers.length) return;
+  trackAnalyticsEvent('lotto_recommend_apply', {
+    event_category: 'engagement',
+    event_label: 'use_recommendation_button'
+  });
   recordNumbers(recommendedNumbers, '통계 추천번호를 선택했어요!');
   document.querySelector('#draw-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -580,6 +600,11 @@ async function lookupOfficialDraw() {
     return;
   }
 
+  trackAnalyticsEvent('lotto_official_lookup_click', {
+    event_category: 'engagement',
+    event_label: 'lookup_button',
+    round
+  });
   lookupButton.disabled = true;
   lookupButton.textContent = '조회 중...';
   lookupStatus.textContent = `${round}회 공식 결과를 불러오고 있어요.`;
@@ -648,6 +673,11 @@ function drawCanvasBall(ctx, number, x, y, radius, matched = false) {
 
 async function saveResultImage() {
   if (!currentNumbers.length) return;
+  trackAnalyticsEvent('lotto_image_save_click', {
+    event_category: 'engagement',
+    event_label: 'save_image_button',
+    has_official_draw: Boolean(currentOfficialDraw)
+  });
   saveImageButton.disabled = true;
   statusText.textContent = '공유 이미지를 만들고 있어요.';
   if (document.fonts?.ready) await document.fonts.ready;
@@ -732,6 +762,10 @@ async function saveResultImage() {
   link.download = `행운번호-${currentNumbers.join('-')}.png`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(imageUrl), 1000);
+  trackAnalyticsEvent('lotto_image_save_success', {
+    event_category: 'engagement',
+    event_label: 'save_image_success'
+  });
   statusText.textContent = '행운 번호 이미지를 저장했어요.';
   saveImageButton.disabled = false;
   setTimeout(() => { statusText.textContent = '오늘의 행운 번호가 도착했어요!'; }, 1600);
